@@ -915,4 +915,10 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
             pubSubManagerOne.deleteNode(nodename);
         }
     }
+
+    @SmackIntegrationTest
+    public void isEqualToOne() {
+        if(1 == 1)
+            System.out.println("TRUE");
+    }
 }
