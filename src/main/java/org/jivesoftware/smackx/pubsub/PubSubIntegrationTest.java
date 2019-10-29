@@ -918,7 +918,6 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
 
     @SmackIntegrationTest
     public void isEqualToOne() {
-        if(1 == 1)
-            System.out.println("TRUE");
+        assertEquals(1,1);
     }
 }
