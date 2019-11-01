@@ -21,13 +21,21 @@ import org.igniterealtime.smack.inttest.SmackIntegrationTest;
 import org.igniterealtime.smack.inttest.SmackIntegrationTestEnvironment;
 import org.igniterealtime.smack.inttest.TestNotPossibleException;
 import org.jivesoftware.smack.SmackConfiguration;
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.SmackException.NoResponseException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPException.XMPPErrorException;
+import org.jivesoftware.smack.chat2.Chat;
+import org.jivesoftware.smack.chat2.ChatManager;
 import org.jivesoftware.smack.packet.*;
+import org.jivesoftware.smack.packet.id.StanzaIdUtil;
+import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smackx.geoloc.packet.GeoLocation;
+import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jivesoftware.smackx.pubsub.packet.PubSub;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
+import org.jivesoftware.smackx.xevent.packet.MessageEvent;
+import org.junit.jupiter.api.Assertions;
 import org.jxmpp.jid.DomainBareJid;
 import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.impl.JidCreate;
@@ -917,7 +925,42 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
     }
 
     @SmackIntegrationTest
-    public void isEqualToOne() {
+    public void isEqualToOneTest() {
         assertEquals(1,1);
+    }
+
+    @SmackIntegrationTest
+    public void sendMessageEventTest() throws NoResponseException, XMPPErrorException, NotConnectedException, InterruptedException, XmppStringprepException, TestNotPossibleException {
+        final String nodename = "sinttest-publish-item-nodename-" + testRunId;
+        final String needle = "test content " + Math.random();
+        LeafNode publisherNode = pubSubManagerOne.createNode(nodename);
+        try {
+            // Publish a new item.
+            publisherNode.publish( new PayloadItem<>( GeoLocation.builder().setDescription( needle ).build() ) );
+            Node subscriberNode = pubSubManagerTwo.getNode(nodename);    
+            ChatManager chatManager = ChatManager.getInstanceFor(connection);
+            final EntityBareJid subscriber = conTwo.getUser().asEntityBareJid();
+            subscriberNode.subscribe( subscriber );
+            Message m = new Message();
+            // Retrieve items and assert that the item that was just published is among them.
+            MessageEvent message = new MessageEvent();
+            message.setOffline(true);
+            message.setStanzaId(StanzaIdUtil.newStanzaId());
+            m.addExtension(message);
+            // final List<Item> items = publisherNode.getItems();
+            System.out.println(message.toString());
+            System.out.println(m.toString());
+
+            // EntityBareJid jid = JidCreate.entityBareFrom("itot@goodbytes.im");
+            Chat chat = chatManager.chatWith(subscriber);
+            chat.send(m);
+            // assertTrue( items.stream().anyMatch( stanza -> stanza.toXML( "" ).toString().contains("offline") ) );
+        }
+        catch (XMPPErrorException | PubSubException.NotAPubSubNodeException xe){
+            throw new TestNotPossibleException( "CANT DO IT" );
+        }
+        finally {
+            pubSubManagerOne.deleteNode( nodename );
+        }
     }
 }
