@@ -15,27 +15,20 @@
  * limitations under the License.
  */
 package org.jivesoftware.smackx.pubsub;
-
 import org.igniterealtime.smack.inttest.AbstractSmackIntegrationTest;
 import org.igniterealtime.smack.inttest.SmackIntegrationTest;
 import org.igniterealtime.smack.inttest.SmackIntegrationTestEnvironment;
 import org.igniterealtime.smack.inttest.TestNotPossibleException;
 import org.jivesoftware.smack.SmackConfiguration;
-import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.SmackException.NoResponseException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPException.XMPPErrorException;
-import org.jivesoftware.smack.chat2.Chat;
-import org.jivesoftware.smack.chat2.ChatManager;
 import org.jivesoftware.smack.packet.*;
 import org.jivesoftware.smack.packet.id.StanzaIdUtil;
-import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smackx.geoloc.packet.GeoLocation;
-import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jivesoftware.smackx.pubsub.packet.PubSub;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.jivesoftware.smackx.xevent.packet.MessageEvent;
-import org.junit.jupiter.api.Assertions;
 import org.jxmpp.jid.DomainBareJid;
 import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.impl.JidCreate;
@@ -70,32 +63,7 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
         pubSubManagerTwo = PubSubManager.getInstanceFor(conTwo, pubSubService);
     }
 
-    /**
-     * Asserts that an item can be published to a node with default configuration.
-     *
-     * @throws NoResponseException if there was no response from the remote entity.
-     * @throws XMPPErrorException if there was an XMPP error returned.
-     * @throws NotConnectedException if the XMPP connection is not connected.
-     * @throws InterruptedException if the calling thread was interrupted.
-     */
-    @SmackIntegrationTest
-    public void publishItemTest() throws NoResponseException, XMPPErrorException, NotConnectedException, InterruptedException {
-        final String nodename = "sinttest-publish-item-nodename-" + testRunId;
-        final String needle = "test content " + Math.random();
-        LeafNode node = pubSubManagerOne.createNode(nodename);
-        try {
-            // Publish a new item.
-            node.publish( new PayloadItem<>( GeoLocation.builder().setDescription( needle ).build() ) );
-
-            // Retrieve items and assert that the item that was just published is among them.
-            final List<Item> items = node.getItems();
-            assertTrue( items.stream().anyMatch( stanza -> stanza.toXML( "" ).toString().contains( needle ) ) );
-        }
-        finally {
-            pubSubManagerOne.deleteNode( nodename );
-        }
-    }
-
+    
     /**
      * Asserts that one can subscribe to an existing node.
      *
@@ -925,39 +893,29 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
     }
 
     @SmackIntegrationTest
-    public void isEqualToOneTest() {
-        assertEquals(1,1);
-    }
-
-    @SmackIntegrationTest
-    public void sendMessageEventTest() throws NoResponseException, XMPPErrorException, NotConnectedException, InterruptedException, XmppStringprepException, TestNotPossibleException {
-        final String nodename = "sinttest-publish-item-nodename-" + testRunId;
-        final String needle = "test content " + Math.random();
+    public void receiveOfflineMessageEventItemTest() throws NoResponseException, XMPPErrorException, NotConnectedException, InterruptedException, ExecutionException, PubSubException
+    {
+        final String nodename = "sinttest-receive-published-item-nodename-" + testRunId;
+        // final String needle = "test content " + Math.random();
         LeafNode publisherNode = pubSubManagerOne.createNode(nodename);
         try {
-            // Publish a new item.
-            publisherNode.publish( new PayloadItem<>( GeoLocation.builder().setDescription( needle ).build() ) );
-            Node subscriberNode = pubSubManagerTwo.getNode(nodename);    
-            ChatManager chatManager = ChatManager.getInstanceFor(connection);
+            final Node subscriberNode = pubSubManagerTwo.getNode(nodename);
             final EntityBareJid subscriber = conTwo.getUser().asEntityBareJid();
             subscriberNode.subscribe( subscriber );
-            Message m = new Message();
-            // Retrieve items and assert that the item that was just published is among them.
-            MessageEvent message = new MessageEvent();
-            message.setOffline(true);
-            message.setStanzaId(StanzaIdUtil.newStanzaId());
-            m.addExtension(message);
-            // final List<Item> items = publisherNode.getItems();
-            System.out.println(message.toString());
-            System.out.println(m.toString());
+            Message message = new Message();
+            MessageEvent event = new MessageEvent();
+            event.setOffline(true);
+            event.setStanzaId(StanzaIdUtil.newStanzaId());
+            message.addExtension(event);
+            final CompletableFuture<Stanza> result = new CompletableFuture<>();
+            conTwo.addAsyncStanzaListener( result::complete, stanza -> stanza.toXML("").toString().contains("offline"));
+            publisherNode.publish( new PayloadItem<>( GeoLocation.builder().setDescription(message.toXML("").toString()).build() ) );
 
-            // EntityBareJid jid = JidCreate.entityBareFrom("itot@goodbytes.im");
-            Chat chat = chatManager.chatWith(subscriber);
-            chat.send(m);
-            // assertTrue( items.stream().anyMatch( stanza -> stanza.toXML( "" ).toString().contains("offline") ) );
+            assertNotNull( result.get( conOne.getReplyTimeout(), TimeUnit.MILLISECONDS ) );
         }
-        catch (XMPPErrorException | PubSubException.NotAPubSubNodeException xe){
-            throw new TestNotPossibleException( "CANT DO IT" );
+        catch ( TimeoutException e )
+        {
+            throw new AssertionError("The published item was not received by the subscriber.", e);
         }
         finally {
             pubSubManagerOne.deleteNode( nodename );
