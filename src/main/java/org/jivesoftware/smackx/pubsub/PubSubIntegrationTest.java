@@ -942,6 +942,7 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
         try {
             // Delete an unexisting node
             pubSubManagerOne.deleteNode(nodename);
+            fail("The server should have returned a <item-not-found/> error, but did not.");
             
         }
         catch (XMPPErrorException e){
