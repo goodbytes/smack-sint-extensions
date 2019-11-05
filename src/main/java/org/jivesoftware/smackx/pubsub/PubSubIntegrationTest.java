@@ -25,12 +25,9 @@ import org.jivesoftware.smack.SmackException.NoResponseException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPException.XMPPErrorException;
 import org.jivesoftware.smack.packet.*;
-import org.jivesoftware.smack.packet.id.StanzaIdUtil;
 import org.jivesoftware.smackx.geoloc.packet.GeoLocation;
-import org.jivesoftware.smackx.pubsub.Item.ItemNamespace;
 import org.jivesoftware.smackx.pubsub.packet.PubSub;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
-import org.jivesoftware.smackx.xevent.packet.MessageEvent;
 import org.jxmpp.jid.DomainBareJid;
 import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.impl.JidCreate;
@@ -942,6 +939,7 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
         try {
             // Delete an unexisting node
             pubSubManagerOne.deleteNode(nodename);
+            fail("The server should have returned a <item-not-found/> error, but did not.");
             
         }
         catch (XMPPErrorException e){
