@@ -947,4 +947,34 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
             assertEquals(StanzaError.Condition.item_not_found, e.getStanzaError().getCondition());
         }
     }
+
+    /**
+     * Assert that the server send a notification to subscribers when deleting a
+     * node that exist
+     * 
+     * <p>
+     * From XEP-0060 § 8.4.1:
+     * </p>
+     * <blockquote> In order to delete a node, a node owner MUST send a node
+     * deletion request, consisting of a &lt;delete/&gt; element whose 'node' attribute
+     * specifies the NodeID of the node to be deleted 
+     * </bloquote>
+     * 
+     * @throws NoResponseException   if there was no response from the remote
+     *                               entity.
+     * @throws XMPPErrorException    if there was an XMPP error returned.
+     * @throws NotConnectedException if the XMPP connection is not connected.
+     * @throws InterruptedException  if the calling thread was interrupted.
+     */
+
+    @SmackIntegrationTest
+    public void deleteNodeAndNotifySubscribersTest() throws NoResponseException, XMPPErrorException, NotConnectedException, InterruptedException{
+        final String nodename = "sinttest-delete-node-that-exist-" + testRunId;
+        try {
+            LeafNode node = pubSubManagerOne.createNode(nodename);
+
+        } catch (XMPPErrorException e) {
+            
+        }
+    }
 }
