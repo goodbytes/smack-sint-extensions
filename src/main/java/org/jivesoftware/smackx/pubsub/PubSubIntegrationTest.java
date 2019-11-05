@@ -921,13 +921,12 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
      * deleting a node that does not exist.
      *
      * <p>
-     * From XEP-0060 § 6.2.3.3:
+     * From XEP-0060 § 6.2.3.4:
      * </p>
      * <blockquote> If the node does not exist, the pubsub service MUST return an
      * &lt;item-not-found/&gt; error. </blockquote>
      * 
-     * @throws NoResponseException   if there was no response from the remote
-     *                               entity.
+     * @throws NoResponseException   if there was no response from the remote entity.
      * @throws XMPPErrorException    if there was an XMPP error returned.
      * @throws NotConnectedException if the XMPP connection is not connected.
      * @throws InterruptedException  if the calling thread was interrupted.
