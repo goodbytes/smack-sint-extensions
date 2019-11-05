@@ -938,7 +938,7 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
     public void deleteNonExistentNodeTest() throws NoResponseException, XMPPErrorException, NotConnectedException, InterruptedException {
         final String nodename = "sinttest-publish-item-nodename-" + testRunId;
         try {
-            // Delete an unexisting node
+            // Delete an non existent node
             pubSubManagerOne.deleteNode(nodename);
             fail("The server should have returned a <item-not-found/> error, but did not.");
             
