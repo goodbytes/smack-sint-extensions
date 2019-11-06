@@ -1061,13 +1061,19 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
     public void deleteNodeAndNotifySubscribersTest() throws NoResponseException, XMPPErrorException,
             NotConnectedException, InterruptedException, NotAPubSubNodeException {
         final String nodename = "sinttest-delete-node-that-exist-" + testRunId;
+        final String needle = "<event xmlns='http://jabber.org/protocol/pubsub#event'>";
         try {
             LeafNode node = pubSubManagerOne.createNode(nodename);
             final Node subscriberNode = pubSubManagerTwo.getNode(nodename);
             final EntityBareJid subscriber = conTwo.getUser().asEntityBareJid();
             subscriberNode.subscribe(subscriber);
+            final CompletableFuture<Stanza> result = new CompletableFuture<>();
+            conTwo.addAsyncStanzaListener(result::complete, stanza -> stanza.toXML("").toString().contains(needle));
+            // Delete an existent node
+            pubSubManagerOne.deleteNode(nodename);
+            assertNull(pubSubManagerOne.getNode(nodename));
         } catch (XMPPErrorException e) {
-            
+            assertEquals(StanzaError.Condition.item_not_found, e.getStanzaError().getCondition());
         }
     }
 }
