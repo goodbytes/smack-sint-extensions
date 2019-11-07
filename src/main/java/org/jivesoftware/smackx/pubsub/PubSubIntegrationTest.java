@@ -741,7 +741,7 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
      * Asserts that the server returns an 'item-not-found' error response when
      * unsubscribing from a node that does not exist.
      *
-     * <p> From XEP-0060 § 6.2.3.4:</p>
+     * <p>From XEP-0060 § 6.2.3.4:</p>
      * <blockquote> 
      * If the node does not exist, the pubsub service MUST return an
      * &lt;item-not-found/&gt; error.
