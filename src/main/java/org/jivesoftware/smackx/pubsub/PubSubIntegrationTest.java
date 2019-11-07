@@ -924,43 +924,77 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
         }
     }
 
+    /**
+     * Asserts that the server returns an 'item-not-found' error response when
+     * deleting a node that does not exist.
+     *
+     * <p>
+     * From XEP-0060 § 8.4.3.2:
+     * </p>
+     * <blockquote> If the requesting entity attempts to delete a node that does not
+     * exist, the service MUST return an &lt;item-not-found/&gt; error.
+     * </blockquote>
+     * 
+     * @throws NoResponseException   if there was no response from the remote
+     *                               entity.
+     * @throws XMPPErrorException    if there was an XMPP error returned.
+     * @throws NotConnectedException if the XMPP connection is not connected.
+     * @throws InterruptedException  if the calling thread was interrupted.
+     */
+
     @SmackIntegrationTest
-    public void isEqualToOneTest() {
-        assertEquals(1,1);
+    public void deleteNonExistentNodeTest()
+            throws NoResponseException, XMPPErrorException, NotConnectedException, InterruptedException {
+        final String nodename = "sinttest-delete-node-that-does-not-exist-" + testRunId;
+        try {
+            // Delete an non existent node
+            pubSubManagerOne.deleteNode(nodename);
+            fail("The server should have returned a <item-not-found/> error, but did not.");
+
+        } catch (XMPPErrorException e) {
+            assertEquals(StanzaError.Condition.item_not_found, e.getStanzaError().getCondition());
+        }
     }
 
+    /**
+     * Assert that the server send a notification to subscribers when deleting a
+     * node that exist
+     * 
+     * <p>
+     * From XEP-0060 § 8.4.1:
+     * </p>
+     * <blockquote> In order to delete a node, a node owner MUST send a node
+     * deletion request, consisting of a &lt;delete/&gt; element whose 'node'
+     * attribute specifies the NodeID of the node to be deleted </bloquote>
+     * 
+     * @throws NoResponseException                     if there was no response from
+     *                                                 the remote entity.
+     * @throws XMPPErrorException                      if there was an XMPP error
+     *                                                 returned.
+     * @throws NotConnectedException                   if the XMPP connection is not
+     *                                                 connected.
+     * @throws InterruptedException                    if the calling thread was
+     *                                                 interrupted.
+     * @throws PubSubException.NotAPubSubNodeException if the node cannot be
+     *                                                 accessed.
+     */
     @SmackIntegrationTest
-    public void sendMessageEventTest() throws NoResponseException, XMPPErrorException, NotConnectedException, InterruptedException, XmppStringprepException, TestNotPossibleException {
-        final String nodename = "sinttest-publish-item-nodename-" + testRunId;
-        final String needle = "test content " + Math.random();
-        LeafNode publisherNode = pubSubManagerOne.createNode(nodename);
+    public void deleteNodeAndNotifySubscribersTest() throws NoResponseException, XMPPErrorException,
+            NotConnectedException, InterruptedException, NotAPubSubNodeException {
+        final String nodename = "sinttest-delete-node-that-exist-" + testRunId;
+        final String needle = "<event xmlns='http://jabber.org/protocol/pubsub#event'>";
         try {
-            // Publish a new item.
-            publisherNode.publish( new PayloadItem<>( GeoLocation.builder().setDescription( needle ).build() ) );
-            Node subscriberNode = pubSubManagerTwo.getNode(nodename);    
-            ChatManager chatManager = ChatManager.getInstanceFor(connection);
+            LeafNode node = pubSubManagerOne.createNode(nodename);
+            final Node subscriberNode = pubSubManagerTwo.getNode(nodename);
             final EntityBareJid subscriber = conTwo.getUser().asEntityBareJid();
-            subscriberNode.subscribe( subscriber );
-            Message m = new Message();
-            // Retrieve items and assert that the item that was just published is among them.
-            MessageEvent message = new MessageEvent();
-            message.setOffline(true);
-            message.setStanzaId(StanzaIdUtil.newStanzaId());
-            m.addExtension(message);
-            // final List<Item> items = publisherNode.getItems();
-            System.out.println(message.toString());
-            System.out.println(m.toString());
-
-            // EntityBareJid jid = JidCreate.entityBareFrom("itot@goodbytes.im");
-            Chat chat = chatManager.chatWith(subscriber);
-            chat.send(m);
-            // assertTrue( items.stream().anyMatch( stanza -> stanza.toXML( "" ).toString().contains("offline") ) );
-        }
-        catch (XMPPErrorException | PubSubException.NotAPubSubNodeException xe){
-            throw new TestNotPossibleException( "CANT DO IT" );
-        }
-        finally {
-            pubSubManagerOne.deleteNode( nodename );
+            subscriberNode.subscribe(subscriber);
+            final CompletableFuture<Stanza> result = new CompletableFuture<>();
+            conTwo.addAsyncStanzaListener(result::complete, stanza -> stanza.toXML("").toString().contains(needle));
+            // Delete an existent node
+            pubSubManagerOne.deleteNode(nodename);
+            assertNull(pubSubManagerOne.getNode(nodename));
+        } catch (XMPPErrorException e) {
+            assertEquals(StanzaError.Condition.item_not_found, e.getStanzaError().getCondition());
         }
     }
 }
