@@ -984,9 +984,13 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
             conTwo.addAsyncStanzaListener(result::complete, stanza -> stanza.toXML("").toString().contains(needle));
             // Delete an existent node
             pubSubManagerOne.deleteNode(nodename);
-            assertNull(pubSubManagerOne.getNode(nodename));
+            assertNull(result.get(conOne.getReplyTimeout(), TimeUnit.MILLISECONDS));
         } catch (XMPPErrorException e) {
             assertEquals(StanzaError.Condition.item_not_found, e.getStanzaError().getCondition());
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            e.printStackTrace();
         }
     }
 }
