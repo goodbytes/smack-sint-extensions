@@ -745,7 +745,8 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
      * From XEP-0060 § 6.2.3.4:
      * </p>
      * <blockquote> If the node does not exist, the pubsub service MUST return an
-     * &lt;item-not-found/&gt; error. </blockquote>
+     * &lt;item-not-found/&gt; error.
+     * </blockquote>
      *
      * @throws NoResponseException   if there was no response from the remote
      *                               entity.
