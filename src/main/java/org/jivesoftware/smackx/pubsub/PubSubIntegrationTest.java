@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.jivesoftware.smackx.pubsub;
+
 import org.igniterealtime.smack.inttest.AbstractSmackIntegrationTest;
 import org.igniterealtime.smack.inttest.SmackIntegrationTest;
 import org.igniterealtime.smack.inttest.SmackIntegrationTestEnvironment;
@@ -24,11 +25,9 @@ import org.jivesoftware.smack.SmackException.NoResponseException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPException.XMPPErrorException;
 import org.jivesoftware.smack.packet.*;
-import org.jivesoftware.smack.packet.id.StanzaIdUtil;
 import org.jivesoftware.smackx.geoloc.packet.GeoLocation;
 import org.jivesoftware.smackx.pubsub.packet.PubSub;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
-import org.jivesoftware.smackx.xevent.packet.MessageEvent;
 import org.jxmpp.jid.DomainBareJid;
 import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.impl.JidCreate;
@@ -743,7 +742,7 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
      * unsubscribing from a node that does not exist.
      *
      * <p>
-     * From XEP-0060 § 6.2.3.3:
+     * From XEP-0060 § 6.2.3.4:
      * </p>
      * <blockquote> If the node does not exist, the pubsub service MUST return an
      * &lt;item-not-found/&gt; error. </blockquote>
@@ -1060,7 +1059,7 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
      */
     @SmackIntegrationTest
     public void deleteNodeAndNotifySubscribersTest() throws NoResponseException, XMPPErrorException,
-            NotConnectedException, InterruptedException, NotAPubSubNodeException {
+            NotConnectedException, InterruptedException, PubSubException.NotAPubSubNodeException {
         final String nodename = "sinttest-delete-node-that-exist-" + testRunId;
         final String needle = "<event xmlns='http://jabber.org/protocol/pubsub#event'>";
         try {
@@ -1075,6 +1074,8 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
             assertNull(pubSubManagerOne.getNode(nodename));
         } catch (XMPPErrorException e) {
             assertEquals(StanzaError.Condition.item_not_found, e.getStanzaError().getCondition());
+        } catch (PubSubException.NotAPubSubNodeException e) {
+            e.printStackTrace();
         }
     }
 }
