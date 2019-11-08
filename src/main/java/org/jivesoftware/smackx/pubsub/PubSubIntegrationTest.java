@@ -972,25 +972,24 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
      */
     @SmackIntegrationTest
     public void deleteNodeAndNotifySubscribersTest() throws NoResponseException, XMPPErrorException,
-            NotConnectedException, InterruptedException, PubSubException.NotAPubSubNodeException {
+        NotConnectedException, InterruptedException, TimeoutException, ExecutionException {
         final String nodename = "sinttest-delete-node-that-exist-" + testRunId;
         final String needle = "<event xmlns='http://jabber.org/protocol/pubsub#event'>";
+        final String delete_confirm = "<delete node='princely_musings'>";
+        final String regex = "#^." + needle + "." + delete_confirm + ".$#";
         try {
-            LeafNode node = pubSubManagerOne.createNode(nodename);
+            pubSubManagerOne.createNode(nodename);
             final Node subscriberNode = pubSubManagerTwo.getNode(nodename);
             final EntityBareJid subscriber = conTwo.getUser().asEntityBareJid();
             subscriberNode.subscribe(subscriber);
             final CompletableFuture<Stanza> result = new CompletableFuture<>();
-            conTwo.addAsyncStanzaListener(result::complete, stanza -> stanza.toXML("").toString().contains(needle));
+            conTwo.addAsyncStanzaListener(result::complete, stanza -> stanza.toXML("").toString().matches(regex));
             // Delete an existent node
             pubSubManagerOne.deleteNode(nodename);
-            assertNull(result.get(conOne.getReplyTimeout(), TimeUnit.MILLISECONDS));
-        } catch (XMPPErrorException e) {
-            assertEquals(StanzaError.Condition.item_not_found, e.getStanzaError().getCondition());
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
+            assertNotNull(result.get(conOne.getReplyTimeout(), TimeUnit.MILLISECONDS));
+        } 
+        catch (PubSubException.NotAPubSubNodeException e) {
+            throw new AssertionError("The published item was not received by the subscriber.", e);
         }
     }
 }
