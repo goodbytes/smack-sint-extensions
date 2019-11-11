@@ -1064,7 +1064,7 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
         final String needle = "<event xmlns='http://jabber.org/protocol/pubsub#event'>";
         final String delete_confirm = "<delete node='princely_musings'>";
         final String regex = "#^." + needle + "." + delete_confirm + ".$#";
-        try{
+        try {
             pubSubManagerOne.createNode(nodename);
             final Node subscriberNode = pubSubManagerTwo.getNode(nodename);
             final EntityBareJid subscriber = conTwo.getUser().asEntityBareJid();
