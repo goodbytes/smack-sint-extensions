@@ -34,6 +34,43 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>org.igniterealtime.smack.inttest.SmackIntegrationTestFramework</mainClass>
+                    <systemProperties>
+                        <systemProperty>
+                            <key>sinttest.service</key>
+                            <value>laptop-guus</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <key>sinttest.adminAccountUsername</key>
+                            <value>admin</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <key>sinttest.adminAccountPassword</key>
+                            <value>admin</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <key>sinttest.securityMode</key>
+                            <value>disabled</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <key>sinttest.enabledTests</key>
+                            <value>PubSubIntegrationTest</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
