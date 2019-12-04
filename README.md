@@ -2,7 +2,7 @@
 Additional tests that add to those in [Smack's Integration Test Framework](https://github.com/igniterealtime/Smack/blob/master/documentation/developer/integrationtest.md).
 
 # Run tests
-To run tests, follow the instructions as provided in [Smack's Integration Test Framework](https://github.com/igniterealtime/Smack/blob/master/documentation/developer/integrationtest.md).
+To run tests, edit the pom.xml to match your settings, then run `mvn exec:java`
 
 This is an example Run/Debug configuration (which you can use in Intellij):
 
