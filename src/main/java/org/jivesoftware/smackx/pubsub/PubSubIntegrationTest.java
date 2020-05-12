@@ -998,7 +998,7 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
      * </p>
      * <blockquote> In order to delete a node, a node owner MUST send a node
      * deletion request, consisting of a &lt;delete/&gt; element whose 'node'
-     * attribute specifies the NodeID of the node to be deleted </bloquote>
+     * attribute specifies the NodeID of the node to be deleted </blockquote>
      * 
      * @throws NoResponseException                     if there was no response from
      *                                                 the remote entity.
