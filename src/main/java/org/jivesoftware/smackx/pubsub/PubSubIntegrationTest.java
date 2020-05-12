@@ -985,15 +985,8 @@ public class PubSubIntegrationTest extends AbstractSmackIntegrationTest {
     @SmackIntegrationTest
     public void deleteNonExistentNodeTest() throws NoResponseException, XMPPErrorException, NotConnectedException, InterruptedException {
         final String nodename = "sinttest-delete-node-that-does-not-exist-" + testRunId;
-        try {
-            // Delete an non existent node
-            pubSubManagerOne.deleteNode(nodename);
-            fail("The server should have returned a <item-not-found/> error, but did not.");
-            
-        }
-        catch (XMPPErrorException e){
-            assertEquals(StanzaError.Condition.item_not_found, e.getStanzaError().getCondition());
-        }
+        // Delete an non existent node
+        assertFalse("The server should have returned a <item-not-found/> error, but did not.", pubSubManagerOne.deleteNode(nodename));
     }
 
     /**
